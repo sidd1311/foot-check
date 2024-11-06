@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload and Classify Image</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+    }
+    .container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 400px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    input[type="file"] {
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .result {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Upload Image for Classification</h1>
+
+  <!-- Form to upload image -->
+  <form id="uploadForm" enctype="multipart/form-data" method="POST" action="/image/classify">
+    <!-- Input for selecting an image file -->
+    <input type="file" name="image" accept="image/*" capture="camera" required><br>
+
+    <!-- Submit button -->
+    <button type="submit">Upload and Classify</button>
+  </form>
+
+  <!-- Div to display results -->
+  <div id="resultContainer" class="result">
+    <h3>Classification Result:</h3>
+    <div id="classificationResult"></div>
+  </div>
+</div>
+
+<script>
+  // Handle form submission asynchronously using Fetch API
+  document.getElementById("uploadForm").addEventListener("submit", function(e) {
+    e.preventDefault(); // Prevent the default form submission
+
+    const formData = new FormData(this); // Get the form data
+
+    fetch("/image/classify", {
+      method: "POST",
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Display the classification results
+      let resultHTML = "<ul>";
+      data.forEach(prediction => {
+        resultHTML += `<li>${prediction.class}: ${prediction.percentage}%</li>`;
+      });
+      resultHTML += "</ul>";
+
+      document.getElementById("classificationResult").innerHTML = resultHTML;
+      document.getElementById("resultContainer").style.display = "block"; // Show result container
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      alert("Something went wrong while classifying the image.");
+    });
+  });
+</script>
+
+</body>
+</html>
