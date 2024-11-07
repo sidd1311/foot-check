@@ -12,6 +12,7 @@
   "description": "",
   "dependencies": {
     "@sashido/teachablemachine-node": "^1.2.2",
+    "@tensorflow/tfjs": "^4.22.0",
     "@tensorflow/tfjs-node": "^4.22.0",
     "cloudinary": "^1.41.3",
     "dotenv": "^16.4.5",

@@ -37,11 +37,28 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #45a049;
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
     }
     .result {
       margin-top: 20px;
+    }
+    .loading {
+      display: none;
+      font-size: 16px;
+      color: #333;
+    }
+    .checkmark, .crossmark {
+      display: none;
+      font-size: 24px;
+      margin-top: 10px;
+    }
+    .checkmark {
+      color: green;
+    }
+    .crossmark {
+      color: red;
     }
   </style>
 </head>
@@ -56,20 +73,41 @@
     <input type="file" name="image" accept="image/*" capture="camera" required><br>
 
     <!-- Submit button -->
-    <button type="submit">Upload and Classify</button>
+    <button type="submit" id="classifyButton">Upload and Classify</button>
   </form>
+
+  <!-- Loading indicator -->
+  <div id="loading" class="loading">Classifying...</div>
 
   <!-- Div to display results -->
   <div id="resultContainer" class="result">
     <h3>Classification Result:</h3>
     <div id="classificationResult"></div>
   </div>
+
+  <!-- Checkmark and Crossmark for success/failure condition -->
+  <div id="checkmark" class="checkmark">✔ Shoes Detected</div>
+  <div id="crossmark" class="crossmark">✘ No Shoes Detected</div>
 </div>
 
 <script>
+  const form = document.getElementById("uploadForm");
+  const classifyButton = document.getElementById("classifyButton");
+  const loadingIndicator = document.getElementById("loading");
+  const resultContainer = document.getElementById("resultContainer");
+  const classificationResult = document.getElementById("classificationResult");
+  const checkmark = document.getElementById("checkmark");
+  const crossmark = document.getElementById("crossmark");
+
   // Handle form submission asynchronously using Fetch API
-  document.getElementById("uploadForm").addEventListener("submit", function(e) {
+  form.addEventListener("submit", function(e) {
     e.preventDefault(); // Prevent the default form submission
+
+    classifyButton.disabled = true; // Disable the button
+    loadingIndicator.style.display = "block"; // Show loading message
+    classificationResult.innerHTML = ""; // Clear previous results
+    checkmark.style.display = "none"; // Hide checkmark
+    crossmark.style.display = "none"; // Hide crossmark
 
     const formData = new FormData(this); // Get the form data
 
@@ -81,17 +119,33 @@
     .then(data => {
       // Display the classification results
       let resultHTML = "<ul>";
+      let isShoesDetected = false;
+
       data.forEach(prediction => {
         resultHTML += `<li>${prediction.class}: ${prediction.percentage}%</li>`;
+        if (prediction.class.toLowerCase() === "shoes" && prediction.percentage >= 70) {
+          isShoesDetected = true;
+        }
       });
       resultHTML += "</ul>";
 
-      document.getElementById("classificationResult").innerHTML = resultHTML;
-      document.getElementById("resultContainer").style.display = "block"; // Show result container
+      classificationResult.innerHTML = resultHTML;
+      resultContainer.style.display = "block"; // Show result container
+
+      // Show checkmark if shoes detected with >= 70%, otherwise show crossmark
+      if (isShoesDetected) {
+        checkmark.style.display = "block";
+      } else {
+        crossmark.style.display = "block";
+      }
     })
     .catch(error => {
       console.error("Error:", error);
       alert("Something went wrong while classifying the image.");
+    })
+    .finally(() => {
+      classifyButton.disabled = false; // Re-enable the button
+      loadingIndicator.style.display = "none"; // Hide loading message
     });
   });
 </script>
